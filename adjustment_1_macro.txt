@@ -1,0 +1,13 @@
+
+# Apply this change to trading_bot/analytics/macro_factors.py
+# Around line 180 in _calculate_recommended_exposure method
+
+# BEFORE:
+# if macro_risk_level == "high":
+#     base_exposure *= 0.7
+
+# AFTER:
+if macro_risk_level == "high":
+    base_exposure *= 0.8  # Less conservative for high risk
+elif macro_risk_level == "medium":
+    base_exposure *= 1.05  # Slightly more aggressive for medium risk
