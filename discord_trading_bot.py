@@ -264,9 +264,10 @@ class TradingSignals(commands.Cog):
     async def show_performance(self, interaction: discord.Interaction):
         """Show performance metrics."""
         try:
-            from trading_bot.analytics.daily_performance import get_performance_tracker
+            from trading_bot.analytics.daily_performance import DailyPerformanceTracker
             
-            tracker = get_performance_tracker()
+            # Create fresh instance to reload data from files
+            tracker = DailyPerformanceTracker()
             stats = tracker.get_daily_performance()
             summary = tracker.get_profit_summary(days=7)
             
@@ -300,9 +301,9 @@ class TradingSignals(commands.Cog):
     async def show_daily(self, interaction: discord.Interaction):
         """Show today's performance."""
         try:
-            from trading_bot.analytics.daily_performance import get_performance_tracker
+            from trading_bot.analytics.daily_performance import DailyPerformanceTracker
             
-            tracker = get_performance_tracker()
+            tracker = DailyPerformanceTracker()
             stats = tracker.get_daily_performance()
             
             color = discord.Color.green() if stats.total_pnl_usd > 0 else discord.Color.red()
@@ -327,9 +328,9 @@ class TradingSignals(commands.Cog):
     async def show_trades(self, interaction: discord.Interaction):
         """Show detailed trades with pagination."""
         try:
-            from trading_bot.analytics.daily_performance import get_performance_tracker
+            from trading_bot.analytics.daily_performance import DailyPerformanceTracker
             
-            tracker = get_performance_tracker()
+            tracker = DailyPerformanceTracker()
             recent_trades = tracker.trades[-10:] if tracker.trades else []
             
             if not recent_trades:
@@ -348,9 +349,9 @@ class TradingSignals(commands.Cog):
     async def show_toptraders(self, interaction: discord.Interaction):
         """Show top performing symbols."""
         try:
-            from trading_bot.analytics.daily_performance import get_performance_tracker
+            from trading_bot.analytics.daily_performance import DailyPerformanceTracker
             
-            tracker = get_performance_tracker()
+            tracker = DailyPerformanceTracker()
             
             symbol_stats = {}
             for trade in tracker.trades:
@@ -384,9 +385,9 @@ class TradingSignals(commands.Cog):
     async def show_portfolio(self, interaction: discord.Interaction):
         """Show portfolio overview."""
         try:
-            from trading_bot.analytics.daily_performance import get_performance_tracker
+            from trading_bot.analytics.daily_performance import DailyPerformanceTracker
             
-            tracker = get_performance_tracker()
+            tracker = DailyPerformanceTracker()
             summary = tracker.get_profit_summary(days=30)
             
             embed = discord.Embed(title="💼 Portfolio Overview", color=discord.Color.blue())
