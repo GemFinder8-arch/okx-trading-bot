@@ -1,1 +1,1 @@
-worker: python discord_trading_bot.py
+worker: python start_bot.py
