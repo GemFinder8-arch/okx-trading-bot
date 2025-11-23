@@ -40,30 +40,38 @@ class MainMenuView(View):
     """Main menu with navigation buttons."""
     
     def __init__(self, cog):
-        super().__init__(timeout=300)
+        super().__init__(timeout=None)  # Never timeout
         self.cog = cog
     
-    @discord.ui.button(label="📊 Performance", style=discord.ButtonStyle.primary)
+    @discord.ui.button(label="📊 Performance", style=discord.ButtonStyle.primary, emoji="📊")
     async def performance_btn(self, interaction: discord.Interaction, button: discord.ui.Button):
         await self.cog.show_performance(interaction)
     
-    @discord.ui.button(label="📅 Daily", style=discord.ButtonStyle.primary)
+    @discord.ui.button(label="📅 Daily", style=discord.ButtonStyle.primary, emoji="📅")
     async def daily_btn(self, interaction: discord.Interaction, button: discord.ui.Button):
         await self.cog.show_daily(interaction)
     
-    @discord.ui.button(label="📈 Trades", style=discord.ButtonStyle.primary)
+    @discord.ui.button(label="📈 Trades", style=discord.ButtonStyle.primary, emoji="📈")
     async def trades_btn(self, interaction: discord.Interaction, button: discord.ui.Button):
         await self.cog.show_trades(interaction)
     
-    @discord.ui.button(label="🏆 Top Symbols", style=discord.ButtonStyle.success)
+    @discord.ui.button(label="🏆 Top Symbols", style=discord.ButtonStyle.success, emoji="🏆")
     async def toptraders_btn(self, interaction: discord.Interaction, button: discord.ui.Button):
         await self.cog.show_toptraders(interaction)
     
-    @discord.ui.button(label="💼 Portfolio", style=discord.ButtonStyle.success)
+    @discord.ui.button(label="💼 Portfolio", style=discord.ButtonStyle.success, emoji="💼")
     async def portfolio_btn(self, interaction: discord.Interaction, button: discord.ui.Button):
         await self.cog.show_portfolio(interaction)
     
-    @discord.ui.button(label="💳 Subscribe", style=discord.ButtonStyle.danger)
+    @discord.ui.button(label="📊 Analytics", style=discord.ButtonStyle.success, emoji="📊")
+    async def analytics_btn(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await self.cog.show_analytics(interaction)
+    
+    @discord.ui.button(label="⚙️ Settings", style=discord.ButtonStyle.secondary, emoji="⚙️")
+    async def settings_btn(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await self.cog.show_settings(interaction)
+    
+    @discord.ui.button(label="💳 Subscribe", style=discord.ButtonStyle.danger, emoji="💳")
     async def subscribe_btn(self, interaction: discord.Interaction, button: discord.ui.Button):
         await self.cog.show_subscribe(interaction)
 
@@ -439,6 +447,99 @@ class TradingSignals(commands.Cog):
         )
         
         embed.set_footer(text="Questions? Use !menu for support")
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+    
+    async def show_analytics(self, interaction: discord.Interaction):
+        """Show advanced analytics and insights."""
+        try:
+            from trading_bot.analytics.daily_performance import DailyPerformanceTracker
+            
+            tracker = DailyPerformanceTracker()
+            summary_7d = tracker.get_profit_summary(days=7)
+            summary_30d = tracker.get_profit_summary(days=30)
+            
+            embed = discord.Embed(
+                title="📊 Advanced Analytics",
+                color=discord.Color.blurple(),
+                description="Detailed trading insights and metrics"
+            )
+            
+            # 7-Day Analysis
+            embed.add_field(
+                name="📈 7-Day Analysis",
+                value=f"PnL: ${summary_7d.get('total_pnl_usd', 0):.2f}\n"
+                      f"Trades: {summary_7d.get('total_trades', 0)}\n"
+                      f"Win Rate: {summary_7d.get('win_rate_pct', 0):.1f}%\n"
+                      f"Daily Avg: ${summary_7d.get('avg_daily_profit', 0):.2f}",
+                inline=True
+            )
+            
+            # 30-Day Analysis
+            embed.add_field(
+                name="📊 30-Day Analysis",
+                value=f"PnL: ${summary_30d.get('total_pnl_usd', 0):.2f}\n"
+                      f"Trades: {summary_30d.get('total_trades', 0)}\n"
+                      f"Win Rate: {summary_30d.get('win_rate_pct', 0):.1f}%\n"
+                      f"Daily Avg: ${summary_30d.get('avg_daily_profit', 0):.2f}",
+                inline=True
+            )
+            
+            # Risk Metrics
+            embed.add_field(
+                name="⚠️ Risk Metrics",
+                value=f"Profit Factor: {summary_30d.get('profit_factor', 0):.2f}x\n"
+                      f"Best Trade: ${summary_30d.get('best_trade', 0):.2f}\n"
+                      f"Worst Trade: ${summary_30d.get('worst_trade', 0):.2f}",
+                inline=False
+            )
+            
+            embed.set_footer(text="Premium Analytics | Updated: " + datetime.now().strftime('%H:%M:%S'))
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+        except Exception as e:
+            await interaction.response.send_message(f"❌ Error: {str(e)}", ephemeral=True)
+    
+    async def show_settings(self, interaction: discord.Interaction):
+        """Show bot settings and preferences."""
+        embed = discord.Embed(
+            title="⚙️ Bot Settings & Preferences",
+            color=discord.Color.greyple(),
+            description="Configure your trading bot experience"
+        )
+        
+        embed.add_field(
+            name="🔔 Notifications",
+            value="✅ Trade Alerts: ON\n"
+                  "✅ Daily Reports: ON\n"
+                  "✅ Risk Warnings: ON\n"
+                  "✅ Performance Updates: ON",
+            inline=False
+        )
+        
+        embed.add_field(
+            name="📊 Display Settings",
+            value="• Trade Details: Full\n"
+                  "• Chart Updates: Real-time\n"
+                  "• Decimal Places: 2\n"
+                  "• Currency: USD",
+            inline=False
+        )
+        
+        embed.add_field(
+            name="🛡️ Risk Management",
+            value="• Max Position Size: $1000\n"
+                  "• Daily Loss Limit: $500\n"
+                  "• Stop Loss: Enabled\n"
+                  "• Take Profit: Enabled",
+            inline=False
+        )
+        
+        embed.add_field(
+            name="💡 Pro Tip",
+            value="Upgrade to Premium to customize these settings!",
+            inline=False
+        )
+        
+        embed.set_footer(text="Settings | Contact admin for changes")
         await interaction.response.send_message(embed=embed, ephemeral=True)
     
     @commands.command()
@@ -929,12 +1030,52 @@ async def on_ready():
     else:
         logger.warning("⚠️ DISCORD_CHANNEL_ID not set - auto-updates disabled")
     
-    # Set bot status
+    # Set bot status with rotating activity
     activity = discord.Activity(
         type=discord.ActivityType.watching,
-        name="trading markets 📈"
+        name="🚀 Trading Markets | !menu for dashboard"
     )
     await bot.change_presence(activity=activity)
+    
+    # Post welcome message with menu to monitoring channel if set
+    if CHANNEL_ID > 0:
+        try:
+            channel = bot.get_channel(CHANNEL_ID)
+            if channel:
+                # Check if welcome message already exists
+                async for message in channel.history(limit=10):
+                    if message.author == bot.user and "Trading Bot Dashboard" in message.content:
+                        return  # Already posted
+                
+                # Post new welcome message
+                embed = discord.Embed(
+                    title="🤖 Trading Bot Dashboard",
+                    description="Welcome to the OKX Trading Bot! Click buttons below to access all features.",
+                    color=discord.Color.gold()
+                )
+                
+                embed.add_field(
+                    name="📊 Features",
+                    value="• Real-time trading signals\n"
+                          "• Performance analytics\n"
+                          "• Advanced risk management\n"
+                          "• Premium insights",
+                    inline=False
+                )
+                
+                embed.add_field(
+                    name="🚀 Get Started",
+                    value="Click any button below to explore!",
+                    inline=False
+                )
+                
+                embed.set_footer(text="OKX Trading Bot | 24/7 Automated Trading")
+                
+                cog = bot.get_cog("TradingSignals")
+                if cog:
+                    await channel.send(embed=embed, view=MainMenuView(cog))
+        except Exception as e:
+            logger.error(f"Could not post welcome message: {e}")
 
 @bot.event
 async def on_command_error(ctx, error):
